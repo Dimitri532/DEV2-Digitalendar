@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EventRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Event
 {
@@ -64,19 +65,19 @@ class Event
     private $isValid;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\city", inversedBy="events")
+     * @ORM\ManyToOne(targetEntity="App\Entity\City", inversedBy="events")
      * @ORM\JoinColumn(nullable=false)
      */
     private $city;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\user", inversedBy="events")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="events")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\language", inversedBy="events")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Language", inversedBy="events")
      */
     private $language;
 
@@ -197,7 +198,7 @@ class Event
         return $this->isValid;
     }
 
-    public function setIsValid(bool $isValid): self
+    public function setIsValid(bool $isValid = false): self
     {
         $this->isValid = $isValid;
 
@@ -283,5 +284,10 @@ class Event
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->getTitle();
     }
 }
