@@ -40,7 +40,7 @@ class EventController extends AbstractController
             $entityManager->persist($event);
             $entityManager->flush();
 
-            return $this->redirectToRoute('event_index');
+            return $this->redirectToRoute('homepage');
         }
 
         return $this->render('event/new.html.twig', [
@@ -70,7 +70,7 @@ class EventController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('event_index', [
+            return $this->redirectToRoute('homepage', [
                 'id' => $event->getId(),
             ]);
         }

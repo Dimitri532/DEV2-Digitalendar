@@ -32,9 +32,13 @@
 {% endblock %}
 
 <main role="main">
-    {% block body %}
+    <div class="py-5 bg-light">
+        <div class="container">
+            {% block body %}
 
-    {% endblock %}
+            {% endblock %}
+        </div>
+    </div>
 </main>
 
 {% block footer %}
