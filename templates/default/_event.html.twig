@@ -9,7 +9,7 @@
                 <div class="btn-group">
                     <a href="" class="btn btn-sm btn-outline-secondary">Voir</a>
                     {% if app.user == events.user or is_granted('ROLE_ADMIN')%}
-                    <a href="{{ path('event_edit', {'id': events.id}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                    <a href="{{ path('event_edit', {'slug': events.slug }) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
                     {% else%}
 
                     {% endif %}

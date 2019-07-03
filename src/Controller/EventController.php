@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Form\EventType;
 use App\Repository\EventRepository;
+use App\Service\Slugger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,18 +31,34 @@ class EventController extends AbstractController
     /**
      * @Route("/new", name="event_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request,Slugger $slugger): Response
     {
         $event = new Event();
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            /** @var UploadedFile $pictureFile */
+            $pictureFile = $form["pictureFile"]->getData();
+
+            if ($pictureFile)
+            {
+                $fileName = uniqid() . "." . $pictureFile->guessExtension();
+
+                $pictureFile->move($this->getParameter("upload_dir"),$fileName);
+
+                $event->setPicture($fileName);
+            }
+            $event->setSlug($slugger->slugify($event->getTitle()));
+            $event->setUser($this->getUser());
+            $event->setIsValid(false);
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($event);
             $entityManager->flush();
 
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute("event_index",["slug" => $event->getSlug()]);
         }
 
         return $this->render('event/new.html.twig', [
@@ -50,7 +68,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @Route("/article/{id}", name="event_show", methods={"GET"})
+     * @Route("/{slug}", name="event_show", methods={"GET"})
      */
     public function show(Event $event): Response
     {
@@ -60,7 +78,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="event_edit", methods={"GET","POST"})
+     * @Route("/{slug}/edit", name="event_edit", methods={"GET","POST"})
      */
     public function edit(Request $request, Event $event): Response
     {
@@ -70,19 +88,19 @@ class EventController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('homepage', [
+            return $this->redirectToRoute('event_index', [
                 'id' => $event->getId(),
+                'slug' => $event->getSlug(),
             ]);
         }
 
         return $this->render('event/edit.html.twig', [
-            'event' => $event,
             'form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/{id}", name="event_delete", methods={"DELETE"})
+     * @Route("/{slug}", name="event_delete", methods={"DELETE"})
      */
     public function delete(Request $request, Event $event): Response
     {
